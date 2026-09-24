@@ -4,9 +4,9 @@
 #include <uxtheme.h>
 #include <stdio.h>
 #include <stdlib.h>
-static const wchar_t *main_labels[]={L"Stereo",L"5.1 Surround",L"7.1 Surround",L"Dolby Atmos",L"DTS:X",L"自动切换",L"高级",L"退出"};
+static const FSA_Text main_labels[]={TXT_STEREO,TXT_51,TXT_71,TXT_ATMOS,TXT_DTS,TXT_AUTO,TXT_ADVANCED,TXT_EXIT};
 static const UINT main_commands[]={100,101,102,103,104,200,300,205};
-static const wchar_t *advanced_labels[]={L"意图捕获",L"编辑规则",L"重新加载规则",L"查看日志",L"开机自启"};
+static const FSA_Text advanced_labels[]={TXT_CAPTURE,TXT_EDIT,TXT_RELOAD,TXT_LOG,TXT_STARTUP};
 static const UINT advanced_commands[]={206,202,203,204,207};
 typedef struct {HMONITOR monitor;RECT rect;HWND hwnd;} Taskbar;
 static BOOL CALLBACK find_taskbar(HWND hwnd,LPARAM context) {
@@ -182,7 +182,7 @@ static void paint(Popup *p,HDC supplied) {
         RECT check=row;check.left=px(p,16);check.right=px(p,40);
         if(checked) text(p,dc,L"\xE73E",check,foreground,p->icon_font); /* CheckMark */
         if(c==300 && !p->advanced)text(p,dc,L"\xE76B",check,foreground,p->icon_font); /* ChevronLeft */
-        row.left=px(p,44); text(p,dc,p->advanced?advanced_labels[i]:main_labels[i],row,color,p->font);
+        row.left=px(p,44); text(p,dc,fsa_text(p->state.language,p->advanced?advanced_labels[i]:main_labels[i]),row,color,p->font);
         if(!p->advanced && i==4) {
             RECT line={px(p,16),px(p,top(p,i)+36),px(p,184),px(p,top(p,i)+37)};
             HBRUSH brush=CreateSolidBrush(p->dark?RGB(70,70,70):RGB(210,210,210)); FillRect(dc,&line,brush);DeleteObject(brush);
@@ -310,12 +310,12 @@ UINT fsa_popup(HWND owner,const FSA_MenuState *state) {
     SystemParametersInfoW(SPI_GETSCREENREADER,0,&reader,0);
     if((contrast.dwFlags&HCF_HIGHCONTRASTON) || reader) {
         HMENU menu=CreatePopupMenu(),advanced=CreatePopupMenu();
-        for(int i=0;i<5;i++)AppendMenuW(advanced,MF_STRING|(i==4 && state->startup?MF_CHECKED:0),advanced_commands[i],advanced_labels[i]);
+        for(int i=0;i<5;i++)AppendMenuW(advanced,MF_STRING|(i==4 && state->startup?MF_CHECKED:0),advanced_commands[i],fsa_text(state->language,advanced_labels[i]));
         for(int i=0;i<8;i++) {
             if(i==5)AppendMenuW(menu,MF_SEPARATOR,0,NULL);
-            if(i==6){AppendMenuW(menu,MF_POPUP,(UINT_PTR)advanced,L"高级");continue;}
+            if(i==6){AppendMenuW(menu,MF_POPUP,(UINT_PTR)advanced,fsa_text(state->language,TXT_ADVANCED));continue;}
             int checked=(i<5 && i==state->selected)||(i==5 && state->automatic);
-            AppendMenuW(menu,MF_STRING|(checked?MF_CHECKED:0)|(i<5 && !(state->available&(1u<<i))?MF_GRAYED:0),main_commands[i],main_labels[i]);
+            AppendMenuW(menu,MF_STRING|(checked?MF_CHECKED:0)|(i<5 && !(state->available&(1u<<i))?MF_GRAYED:0),main_commands[i],fsa_text(state->language,main_labels[i]));
         }
         POINT pt;GetCursorPos(&pt);MONITORINFO mi={.cbSize=sizeof(mi)};GetMonitorInfoW(MonitorFromPoint(pt,MONITOR_DEFAULTTONEAREST),&mi);
         SetForegroundWindow(owner);

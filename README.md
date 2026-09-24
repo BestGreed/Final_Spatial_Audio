@@ -1,5 +1,7 @@
 # Final Spatial Audio
 
+简体中文 | [English](README.en.md)
+
 Windows 11 x64 常驻托盘音频模式管理工具，使用纯 C11 / Win32 实现。
 
 支持手动切换 Stereo、5.1、7.1、Dolby Atmos for Home Theater、DTS:X for home theater，以及基于前台窗口或运行中进程的优先级自动切换。
@@ -20,6 +22,14 @@ Windows 11 x64 常驻托盘音频模式管理工具，使用纯 C11 / Win32 实�
 
 使用方法、规则字段、备份与卸载见 [中文使用说明](docs/使用说明.txt)。架构见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
+## 界面语言
+
+默认根据 Windows 用户界面语言选择：简体、繁体中文环境使用现有简体中文界面，其他语言环境使用英文。键盘布局和区域格式不影响选择。
+
+可在 `final-spatial-audio.ini` 的 `[Manager]` 下设置 `Language=auto`、`Language=zh` 或 `Language=en`。不区分大小写，缺失或无效值自动检测；修改后需重启程序，“重新加载规则”仅重载规则。日志、规则字段和模式标识保持语言无关。
+
+英文文档：[使用指南](docs/User-Guide.en.txt)、[架构](ARCHITECTURE.en.md)、[测试](TESTING.en.md)。便携包包含中英文使用说明。
+
 ## 构建
 
 准备 Windows x64 与 Zig 0.14.1，然后在 PowerShell 执行：
@@ -33,7 +43,7 @@ Windows 11 x64 常驻托盘音频模式管理工具，使用纯 C11 / Win32 实�
 生成与校验便携包：
 
 ```powershell
-./release.ps1 -Zig <zig.exe完整路径> -Version 0.1.0
+./release.ps1 -Zig <zig.exe完整路径> -Version 0.1.1
 ```
 
 测试范围见 [TESTING.md](TESTING.md)。Windows11环境下无需任何依赖。

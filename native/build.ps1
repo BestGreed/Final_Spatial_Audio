@@ -33,3 +33,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Popup test build failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Profile test build failed' }
 & $Zig cc -target x86_64-windows-gnu -std=c11 -O2 -g0 -s -Wall -Wextra -Werror "$root/material_test.c" "$root/fluent_menu.c" -luser32 -lgdi32 -ldwmapi -luxtheme -ladvapi32 -o "$root/bin/material-test.exe"
 if ($LASTEXITCODE -ne 0) { throw 'Material test build failed' }
+
+& $Zig cc -target x86_64-windows-gnu -std=c11 -O2 -g0 -s -Wall -Wextra -Werror "$root/language_test.c" -luser32 -lgdi32 -o "$root/bin/language-test.exe"
+if ($LASTEXITCODE -ne 0) { throw "Language test build failed" }
+& "$root/bin/language-test.exe"
+if ($LASTEXITCODE -ne 0) { throw "Language tests failed" }

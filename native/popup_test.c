@@ -94,7 +94,8 @@ SendMessageW(popup,WM_KEYDOWN,VK_HOME,0);SendMessageW(popup,WM_KEYDOWN,VK_RETURN
     }
     return DefWindowProcW(hwnd,msg,w,l);
 }
-int main(void) {
+int main(int argc,char **argv) {
+    FSA_Language test_language=argc>1 && !strcmp(argv[1],"en")?FSA_EN:FSA_ZH;
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     HINSTANCE instance=GetModuleHandleW(NULL);
     WNDCLASSW wc={0};wc.hInstance=instance;wc.lpfnWndProc=owner_proc;wc.lpszClassName=L"FSAPopupTestOwner";RegisterClassW(&wc);
@@ -103,7 +104,7 @@ int main(void) {
     UINT expected[]={205,0,101,0,206,207,200,205,0,0,0,0,206};int failed=0;
     for(test_case=0;test_case<13;test_case++) {
         ticks=phase=0;GetCursorPos(&original_cursor);SetTimer(owner,1,250,NULL);
-        FSA_MenuState state={2,1,0,test_case==6?1u:31u};
+        FSA_MenuState state={2,1,0,test_case==6?1u:31u,test_language};
         UINT actual=fsa_popup(owner,&state);
         KillTimer(owner,1);
         printf("Popup case %d: got %u expected %u geometry=%d\n",test_case,actual,expected[test_case],geometry_failed);

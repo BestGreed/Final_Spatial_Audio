@@ -14,6 +14,7 @@ New-Item -ItemType Directory -Path "$package/bin","$package/licenses" -Force | O
 Copy-Item -LiteralPath "$projectRoot/native/bin/FinalSpatialAudio.exe" -Destination "$package/bin/FinalSpatialAudio.exe"
 Copy-Item -LiteralPath "$projectRoot/native/final-spatial-audio.example.ini" -Destination "$package/final-spatial-audio.ini"
 Copy-Item -LiteralPath "$projectRoot/docs/使用说明.txt" -Destination "$package/使用说明.txt"
+Copy-Item -LiteralPath "$projectRoot/docs/User-Guide.en.txt" -Destination "$package/User-Guide.en.txt"
 Copy-Item -LiteralPath "$projectRoot/LICENSE" -Destination "$package/LICENSE.txt"
 Copy-Item -LiteralPath "$projectRoot/THIRD_PARTY_NOTICES.md" -Destination "$package/THIRD_PARTY_NOTICES.md"
 Copy-Item -LiteralPath "$projectRoot/native/assets/LICENSE.txt" -Destination "$package/licenses/Icon-assets.txt"

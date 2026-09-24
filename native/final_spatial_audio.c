@@ -39,7 +39,9 @@ static int load_mode_icons(HINSTANCE instance) {
 static HANDLE wake,stop,thread;
 static SRWLOCK state_lock=SRWLOCK_INIT;
 static int automatic=0,manual=-1,current=-1;
-static wchar_t status[128]=L"正在读取音频状态",root[MAX_PATH],ini[MAX_PATH],logpath[MAX_PATH];
+static FSA_Language language;
+#define UI(id) fsa_text(language,id)
+static wchar_t status[128],root[MAX_PATH],ini[MAX_PATH],logpath[MAX_PATH];
 static LONG reload_requested=1;
 static LONG control_generation=0;
 static LONG worker_read_ok=0;
@@ -233,7 +235,7 @@ static HRESULT capture_intent(SpatialPolicy *p) {
         spatial_profiles[i]=actual;spatial_settings[i]=settings;spatial_captured|=1u<<i;
         if(!save_profiles()){spatial_profiles[i]=previous;spatial_settings[i]=old;spatial_captured=flags;return E_FAIL;}
     }
-    check_capabilities(p);publish(mode,L"意图已捕获并保存");return S_OK;
+    check_capabilities(p);publish(mode,UI(TXT_CAPTURED));return S_OK;
 }
 static HRESULT switch_mode(SpatialPolicy *p,int mode) {
     if(mode<0 || mode>=MODE_COUNT || !(InterlockedCompareExchange(&available_modes,0,0)&(1<<mode)))return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
@@ -282,12 +284,12 @@ static HRESULT switch_mode(SpatialPolicy *p,int mode) {
 }
 static unsigned __stdcall worker(void *unused) {
     (void)unused; HRESULT hr=CoInitializeEx(NULL,COINIT_MULTITHREADED);
-    if(FAILED(hr)) { publish(-1,L"COM initialization failed"); return 1; }
+    if(FAILED(hr)) { publish(-1,UI(TXT_COM_FAILED)); return 1; }
     SpatialPolicy *p=NULL;
     hr=CoCreateInstance(&spatial_policy_class,NULL,CLSCTX_ALL,&spatial_policy_iid,(void**)&p);
     if(FAILED(hr))log_line(L"Spatial interface unavailable; PCM only",hr);
     int first=0;
-    if(!initialize_profiles(&first)) {publish(-1,L"配置初始化失败；请查看日志");if(p)p->v->release(p);CoUninitialize();return 1;}
+    if(!initialize_profiles(&first)) {publish(-1,UI(TXT_INIT_FAILED));if(p)p->v->release(p);CoUninitialize();return 1;}
     check_capabilities(p);
     if(first && !(available_modes&24) && !quiet_start)PostMessageW(window,WM_NOTICE,1,0);
     AL_Snapshot baseline={0};SpatialSettings baseline_spatial={0};int have_baseline=0;
@@ -329,7 +331,7 @@ static unsigned __stdcall worker(void *unused) {
                 capability_due=now+30000;
             }
             if(SUCCEEDED(hr)) InterlockedExchange(&worker_read_ok,1);
-            publish(cached,FAILED(hr)?L"Endpoint unavailable":L"Ready"); audit=now+10000;
+            publish(cached,FAILED(hr)?UI(TXT_UNAVAILABLE):UI(TXT_READY)); audit=now+10000;
         }
         int target=lock_mode;
         if(auto_mode && !observe_rules(&target)) target=-1;
@@ -343,15 +345,15 @@ static unsigned __stdcall worker(void *unused) {
                 if(FAILED(read)){audit=0;continue;}
                 if(!actual_equal(&live,&live_settings,&baseline,&baseline_spatial)) {audit=0;continue;}
             }
-            publish(cached,L"Switching...");
+            publish(cached,UI(TXT_SWITCHING));
             hr=switch_mode(p,target);
             log_line(names[target],hr);
             if(SUCCEEDED(hr)) {
-                cached=verified=target;failed_target=-1;publish(cached,L"Verified");
+                cached=verified=target;failed_target=-1;publish(cached,UI(TXT_VERIFIED));
                 int observed;have_baseline=SUCCEEDED(read_actual(p,&baseline,&baseline_spatial,&observed));
                 AcquireSRWLockExclusive(&state_lock);if(!automatic && manual==target)manual=-1;ReleaseSRWLockExclusive(&state_lock);
             }
-            else { cached=verified=-1; failed_target=target; retry=now+30000; publish(-1,L"Switch failed; see log (30s backoff)"); }
+            else { cached=verified=-1; failed_target=target; retry=now+30000; publish(-1,UI(TXT_SWITCH_FAILED)); }
             audit=GetTickCount64()+10000;
         }
         ULONGLONG after=GetTickCount64();
@@ -368,7 +370,7 @@ static void update_tray(void) {
     /* Show the verified output mode even while paused or manually locked.
        The app identity icon is never assigned to the tray. */
     tray.hIcon=current>=0 && current<MODE_COUNT?mode_icons[current]:LoadIconW(NULL,IDI_QUESTION);
-    swprintf(tray.szTip,128,L"Final Spatial Audio: %ls\n%ls - %ls",current>=0?names[current]:L"Custom / unknown",automatic?L"自动切换":L"手动锁定",status);
+    swprintf(tray.szTip,128,L"Final Spatial Audio: %ls\n%ls - %ls",current>=0?names[current]:UI(TXT_UNKNOWN),automatic?UI(TXT_AUTO):UI(TXT_MANUAL),status);
     ReleaseSRWLockShared(&state_lock); Shell_NotifyIconW(NIM_MODIFY,&tray);
 }
 static int startup_enabled(void) {
@@ -383,7 +385,7 @@ static void toggle_startup(void) {
         else {wchar_t path[MAX_PATH],value[2*MAX_PATH];GetModuleFileNameW(NULL,path,MAX_PATH);swprintf(value,2*MAX_PATH,L"\"%ls\"",path);result=RegSetValueExW(key,L"FinalSpatialAudio",0,REG_SZ,(BYTE*)value,(DWORD)((wcslen(value)+1)*sizeof(wchar_t)));}
         RegCloseKey(key);
     }
-    if(result!=ERROR_SUCCESS)MessageBoxW(window,L"无法更新开机自启设置。",L"Final Spatial Audio",MB_ICONERROR);
+    if(result!=ERROR_SUCCESS)MessageBoxW(window,UI(TXT_STARTUP_FAILED),L"Final Spatial Audio",MB_ICONERROR);
 }
 static void open_text(const wchar_t *path) {
     wchar_t argument[2*MAX_PATH];swprintf(argument,2*MAX_PATH,L"\"%ls\"",path);
@@ -391,7 +393,7 @@ static void open_text(const wchar_t *path) {
 }
 static void menu(void) {
     static int showing=0;if(showing)return;
-    FSA_MenuState state;
+    FSA_MenuState state;state.language=language;
     AcquireSRWLockShared(&state_lock);state.selected=current;state.automatic=automatic;ReleaseSRWLockShared(&state_lock);
     state.available=(unsigned)InterlockedCompareExchange(&available_modes,0,0);state.startup=startup_enabled();
     showing=1;UINT command=fsa_popup(window,&state);showing=0;
@@ -421,8 +423,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd,UINT msg,WPARAM w,LPARAM l) {
     if(msg==recreated) { Shell_NotifyIconW(NIM_ADD,&tray); return 0; }
     if(msg==WM_TRAY && (l==WM_RBUTTONUP || l==WM_LBUTTONUP)) { menu(); return 0; }
     if(msg==WM_NOTICE) {
-        const wchar_t *message=w==1?L"当前输出设备未报告可用的家庭影院空间音频模式（Dolby Atmos / DTS:X）。可能与设备、连接方式或空间音频组件有关。不可用的模式已置灰；可继续使用支持的标准模式。":
-            w==2?L"已捕获当前系统音频设置，并更新对应模式的配置。":L"捕获失败：当前状态无法识别为受支持模式，或配置无法保存。请查看日志。";
+        const wchar_t *message=w==1?UI(TXT_NO_SPATIAL):
+            w==2?UI(TXT_CAPTURE_OK):UI(TXT_CAPTURE_FAILED);
         MessageBoxW(hwnd,message,L"Final Spatial Audio",MB_OK|(w==2?MB_ICONINFORMATION:MB_ICONWARNING));return 0;
     }
     if(msg==WM_STATUS) { update_tray(); return 0; }
@@ -455,6 +457,10 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR cmd,int show) {
     wchar_t *slash=wcsrchr(root,L'\\'); if(!slash) return 1; *slash=0;
     slash=wcsrchr(root,L'\\'); if(!slash) return 1; *slash=0;
     swprintf(ini,MAX_PATH,L"%ls\\final-spatial-audio.ini",root); swprintf(logpath,MAX_PATH,L"%ls\\final-spatial-audio.log",root);
+    wchar_t language_setting[32];
+    GetPrivateProfileStringW(L"Manager",L"Language",L"auto",language_setting,32,ini);
+    language=fsa_select_language(language_setting,GetUserDefaultUILanguage());
+    wcscpy(status,UI(TXT_READING));
     log_line(L"Startup",S_OK);
     quiet_start=!wcscmp(cmd,L"--smoke") || !wcscmp(cmd,L"--check");
     if(!wcscmp(cmd,L"--check")) {
@@ -475,7 +481,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR cmd,int show) {
     if(!window) return 1;
     SendMessageW(window,WM_SETICON,ICON_SMALL,(LPARAM)app_icon_small);
     tray.cbSize=sizeof(tray); tray.hWnd=window; tray.uID=1; tray.uFlags=NIF_ICON|NIF_MESSAGE|NIF_TIP;
-    tray.uCallbackMessage=WM_TRAY; tray.hIcon=LoadIconW(NULL,IDI_QUESTION); wcscpy(tray.szTip,L"Final Spatial Audio（手动锁定）");
+    tray.uCallbackMessage=WM_TRAY; tray.hIcon=LoadIconW(NULL,IDI_QUESTION); swprintf(tray.szTip,128,L"Final Spatial Audio (%ls)",UI(TXT_MANUAL));
     if(!Shell_NotifyIconW(NIM_ADD,&tray)) { log_line(L"Tray creation failed",HRESULT_FROM_WIN32(GetLastError())); DestroyWindow(window); return 1; }
     thread=(HANDLE)_beginthreadex(NULL,0,worker,NULL,0,NULL);
     if(!thread) { DestroyWindow(window); return 1; }

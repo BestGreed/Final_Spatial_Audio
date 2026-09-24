@@ -1,0 +1,131 @@
+Final Spatial Audio — Windows x64 portable edition
+=================================================
+
+1. Quick start
+
+Extract the entire archive into a permanent folder writable by your account, such as D:\Apps\Final Spatial Audio. Run bin\FinalSpatialAudio.exe. FSA lives in the notification area and has no main window; its icon may be inside the taskbar's hidden-icons panel. Left-click or right-click it to open the mode menu.
+
+FSA starts in manual lock and leaves the current audio settings unchanged. Select a mode to switch manually, or check Auto switch to enable rules.
+
+Requirements: Windows 11 x64. FSA uses installed system components, fonts and the C runtime; no additional application runtime or audio helper needs to be installed. Atmos / DTS:X require a compatible device, connection and corresponding Windows spatial audio components. FSA does not include or replace these components.
+
+Keep the bin folder and configuration files together. Do not move the EXE alone or run it inside the ZIP. Avoid protected, read-only directories. Profiles and logs are stored in the parent of bin. A reasonably short installation path is recommended.
+
+2. Package contents
+
+bin\FinalSpatialAudio.exe    Application with embedded icons
+final-spatial-audio.ini      Configuration with a disabled example rule
+User-Guide.en.txt            English guide
+使用说明.txt                 Chinese guide
+LICENSE.txt                 Source license
+THIRD_PARTY_NOTICES.md       License scope and runtime notices
+licenses/                   Artwork and compiler runtime notices
+SHA256SUMS.txt               File checksums
+
+This clean package contains no development tools, source code, tests, personal device snapshots, logs or startup registration. Profiles and logs created after first use are normal local application data.
+
+3. Language
+
+By default, FSA checks the Windows user interface language at startup. All Chinese UI variants use the existing Simplified Chinese interface; other languages use English. Keyboard layout and regional formats do not control this choice.
+
+Set the Language entry in final-spatial-audio.ini to override:
+
+[Manager]
+Language=auto
+Fallback=Stereo
+DebounceMs=500
+
+Language accepts auto, zh or en, case-insensitively. Missing or invalid values use automatic detection. Restart FSA after changing Language; Reload rules only reloads audio rules. The language choice does not change device profiles or audio mode. Configuration keys, mode identifiers and diagnostic logs remain stable in English.
+
+4. Manual and automatic switching
+
+The main menu offers Stereo, 5.1, 7.1, Dolby Atmos and DTS:X.
+- Selecting an available mode applies its profile and unchecks Auto switch.
+- Checking Auto switch selects the mode from the highest-priority matching rule.
+- Unchecking it enters manual lock and stops rule-based switching.
+- A detected external audio change in Windows or another application disables automatic switching and preserves that change.
+- Exiting FSA leaves the current audio settings in place.
+
+The tray icon represents the actual mode read back from Windows. The FSA application logo is never substituted for a mode icon. Unknown or unavailable states show a question mark.
+
+5. First-use device profiles
+
+For a newly encountered default output, FSA creates Stereo, 5.1 and 7.1 profiles with 24 valid bits at 48 kHz in a 32-bit container. The shared mix format is float32 / 48 kHz. Main speakers default to full range; LFE is excluded from the main-speaker size flags. Initialization generates local profiles without changing system audio.
+
+For 5.1, FSA preserves a recognized current layout when possible and probes standard Back / Side candidates when needed. Capture intent saves your actual layout. Profiles belong to their output device; do not apply another computer's snapshots.
+
+If no home theater spatial audio mode is available on first use, FSA displays a notice. Known unavailable modes are disabled. If exclusive mode is disabled, the PCM format check may be inconclusive; selection is still allowed and verified afterward. A failed switch attempts rollback. Open View log in Advanced for details.
+
+Atmos / DTS:X use the encoded format required by the Windows spatial audio service. The 24 bit / 48 kHz PCM defaults do not constrain these modes.
+
+6. Advanced menu
+
+Hover briefly over Advanced to open its submenu, or click to open it immediately. The left arrow indicates the usual opening direction; screen boundaries may change placement. Crossing the gap does not immediately dismiss the submenu. Leaving its interaction region closes it after a short delay. Esc closes the submenu, then the main menu.
+
+Capture intent
+First configure the desired mode, bit depth, sample rate and speaker size in Windows. Select Capture intent to identify the current mode and replace that mode's saved profile. FSA also enters manual lock.
+
+Each device has one profile per mode. Capturing the same mode again replaces the previous snapshot. Unrecognized modes do not overwrite profiles. To back up profiles, exit FSA and copy the profiles folder.
+
+PCM restores device and mix formats, speaker layout and full-range flags. Spatial profiles retain actual spatial selection and speaker properties. Restoration enables the encoder through the system audio service instead of replaying encoded transport format bytes.
+
+Edit rules / Reload rules
+Edit final-spatial-audio.ini, save it, then select Reload rules. Rule changes do not require a restart. Language changes do require a restart.
+
+View log
+Opens final-spatial-audio.log. Logs rotate to .log.old at approximately 1 MiB.
+
+Start with Windows
+Registers the current executable for startup when the current user signs in. Unchecking removes that entry. Administrator privileges are normally unnecessary. FSA still starts in manual lock.
+
+Before moving the installation, disable startup, move the files and enable it again. Disable startup before uninstalling.
+
+7. Rule configuration
+
+The package's generic example is disabled. For example, to select 7.1 while YuanShen.exe is running, add:
+
+[Rule:YuanShen]
+Enabled=1
+Exe=YuanShen.exe
+Scope=Running
+Profile=7.1
+Priority=300
+
+Enabled: 1 enables a rule; 0 disables it.
+Exe: process filename, not a full path; case-insensitive.
+Scope: Running matches an existing process; Foreground matches the process owning the foreground window.
+Profile: Stereo, 5.1, 7.1, Atmos or DTS-X; Dolby Atmos and DTS:X are also accepted.
+Priority: larger numbers win; ties use configuration order.
+
+A high-priority background application can retain its mode over lower-priority foreground applications. With no match, [Manager] Fallback is used (Stereo by default). If the winning rule targets an unavailable mode, no switch occurs; FSA does not silently choose a lower-priority rule.
+
+DebounceMs defaults to 500 and is limited to 100–5000. Background processes are checked approximately every two seconds; foreground changes also have event notifications. Up to 64 rules are supported.
+
+8. Device changes and troubleshooting
+
+- Audio state is audited approximately every ten seconds, so external changes are not detected instantly. FSA also checks immediately before a switch.
+- The default output and capabilities are checked approximately every thirty seconds. A default-device change returns FSA to manual lock and loads that device's profiles.
+- Disabled modes: check Windows sound settings, HDMI/DisplayPort connections, drivers and required spatial audio components.
+- No sound or a failed switch: restore a working mode in Windows first, then inspect the log. Rollback is best effort and cannot guarantee recovery from a driver fault.
+- Disabled Windows transparency or high-contrast/screen-reader settings can use an opaque or standard system menu.
+- No new tray icon: FSA is single-instance; exit any existing copy first.
+- Corrupt profiles: FSA preserves the file and stops initialization for that device. Exit and back up profiles before repairing or removing the affected file.
+
+9. Updating, removal and diagnostic commands
+
+Update: exit FSA, back up rules and profiles, then replace bin\FinalSpatialAudio.exe with the new version. Preserve your configuration. Older configurations without Language automatically use system UI detection.
+
+Remove: uncheck Start with Windows, exit FSA and delete the extracted directory. This does not reset the current Windows audio mode.
+
+Optional commands from the package directory:
+bin\FinalSpatialAudio.exe --check    Initialize/check local profiles without switching audio
+bin\FinalSpatialAudio.exe --smoke    Read status with a tray icon; exit after about two seconds
+bin\FinalSpatialAudio.exe --stop     Ask the running instance to exit gracefully
+
+10. Current limitations
+
+FSA is a native user-session tray program, not a Windows system service. It has no graphical rule editor or AudioActive/WASAPI Session rules yet.
+
+Some audio policy and material interfaces use undocumented system ABIs. Behavior has been validated on the development device; other Windows versions, drivers and devices may differ. The portable build is not Authenticode-signed.
+
+Original source and documentation use the Unlicense. Artwork, trademarks and compiler runtime components have separate license scopes described in the included notices.

@@ -1,5 +1,7 @@
 # 图标资源
 
+简体中文 | [English](README.en.md)
+
 本目录为项目提供的图标资源；许可范围见 [LICENSE.txt](LICENSE.txt)，不将图形或第三方商标视为公共领域。
 
 | 文件 | 用途 |

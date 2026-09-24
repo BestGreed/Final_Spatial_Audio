@@ -1,3 +1,3 @@
-# 使用说明
+# User guides
 
-完整操作指南见 [使用说明.txt](使用说明.txt)。
+[中文使用说明](使用说明.txt) | [English user guide](User-Guide.en.txt)

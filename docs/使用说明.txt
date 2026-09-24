@@ -17,6 +17,7 @@
 bin\FinalSpatialAudio.exe    主程序，已内嵌图标
 final-spatial-audio.ini      规则配置（示例默认禁用）
 使用说明.txt                 本说明
+User-Guide.en.txt            英文完整使用指南
 LICENSE.txt                 源码许可
 THIRD_PARTY_NOTICES.md        许可范围及运行时说明
 licenses/                   图标与编译运行时许可声明
@@ -109,3 +110,9 @@ bin\FinalSpatialAudio.exe --stop     请求正在运行的 FSA 平滑退出
 
 这是原生用户会话托盘程序，不是 Windows 系统服务。当前没有图形规则编辑器或 AudioActive/WASAPI Session 规则。
 部分音频策略及菜单材质使用非公开系统 ABI，已在开发机器验证，其他设备、Windows 更新或驱动组合仍可能存在兼容性差异。该便携构建未进行 Authenticode 数字签名。
+
+十、界面语言
+
+默认按 Windows 用户界面语言自动选择：中文（含繁体中文）使用现有简体中文界面，其他语言使用英文。键盘布局和区域格式不决定界面语言。
+
+在 final-spatial-audio.ini 的 [Manager] 下添加 Language=auto、Language=zh 或 Language=en 可选择自动、中文或英文。值不区分大小写，缺失或无效值自动检测。修改后退出并重新启动程序；“重新加载规则”仅应用规则变化。旧配置无需迁移。日志及规则字段保持原有稳定标识，语言不会改变音频配置或切换模式。
