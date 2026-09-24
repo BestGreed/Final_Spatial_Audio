@@ -1,0 +1,7 @@
+#include "resource.h"
+IDI_FSA_APP ICON "assets/FSA.ico"
+IDI_FSA_STEREO ICON "assets/2_0.ico"
+IDI_FSA_51 ICON "assets/5_1.ico"
+IDI_FSA_71 ICON "assets/7_1.ico"
+IDI_FSA_ATMOS ICON "assets/ATMOS.ico"
+IDI_FSA_DTSX ICON "assets/DTSX.ico"
