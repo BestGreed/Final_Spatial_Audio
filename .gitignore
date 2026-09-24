@@ -1,0 +1,16 @@
+native/bin/
+dist/
+.zig-cache/
+zig-cache/
+**/profiles/
+**/profiles-24-192/
+**/recovery/
+**/final-spatial-audio.ini
+*.bin
+*.log
+*.log.old
+*.pdb
+*.tmp
+*.zip
+.env
+.env.*
