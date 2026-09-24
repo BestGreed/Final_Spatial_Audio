@@ -36,7 +36,7 @@ Windows 11 x64 常驻托盘音频模式管理工具，使用纯 C11 / Win32 实�
 ./release.ps1 -Zig <zig.exe完整路径> -Version 0.1.0
 ```
 
-测试范围见 [TESTING.md](TESTING.md)。无需另装 WinUI、Windows App SDK、AutoHotkey 或音频辅助程序。
+测试范围见 [TESTING.md](TESTING.md)。Windows11环境下无需任何依赖。
 
 ## 兼容性
 
