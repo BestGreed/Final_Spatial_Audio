@@ -6,6 +6,12 @@ Windows 11 x64 常驻托盘音频模式管理工具，使用纯 C11 / Win32 实�
 
 支持手动切换 Stereo、5.1、7.1、Dolby Atmos for Home Theater、DTS:X for home theater，以及基于前台窗口或运行中进程的优先级自动切换。
 
+## 实际运行截图
+
+![Final Spatial Audio 英文托盘菜单与高级设置菜单](docs/images/tray-menu-en.png)
+
+图中展示英文界面的托盘模式菜单和高级设置菜单。
+
 ## 下载与运行
 
 从 [Releases](https://github.com/BestGreed/Final_Spatial_Audio/releases) 下载 Windows x64 便携包，完整解压后运行 `bin/FinalSpatialAudio.exe`。程序首次启动为手动锁定，不主动改变当前声音。请保留目录结构，并放在当前用户可写的位置。

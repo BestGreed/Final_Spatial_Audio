@@ -6,6 +6,12 @@ A Windows 11 x64 audio mode manager that runs in the notification area, implemen
 
 Switch manually between Stereo, 5.1, 7.1, Dolby Atmos for Home Theater and DTS:X for Home Theater, or select modes automatically using prioritized foreground and running-process rules.
 
+## Screenshot
+
+![Final Spatial Audio tray mode menu and Advanced submenu in English](docs/images/tray-menu-en.png)
+
+The screenshot shows the English tray mode menu with the Advanced submenu open.
+
 ## Download and run
 
 Download the Windows x64 portable ZIP from [Releases](https://github.com/BestGreed/Final_Spatial_Audio/releases), extract the entire archive and run `bin/FinalSpatialAudio.exe`. Keep the folder structure intact and use a location writable by your user account. The application starts in manual lock and does not change the current audio mode until you select a mode or enable automatic switching.
